@@ -3,6 +3,8 @@ MEP Project - Folder Structure and Workflow
 Purpose
 This project builds an end-to-end pipeline from raw parliamentary speech data to final descriptive and regression analysis outputs on polarisation and demographic context.
 
+IMPORTANT: to run the analysis, first procure a (free) API key of openRouter to run the LLM analysis cells here https://openrouter.ai/workspaces/default/keys.
+
 Recommended run order
 1) 1 Speeches
 2) 2 MEP List
