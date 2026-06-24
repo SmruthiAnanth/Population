@@ -1,0 +1,3179 @@
+
+
+
+
+
+
+
+
+
+
+
+
+if "analysis_df" not in globals():
+
+
+
+
+
+
+
+    raise RuntimeError("Please run the earlier analysis cells first so analysis_df exists.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sns.set_theme(style="whitegrid", context="notebook")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FIGURE_OUTPUT_DIR = globals().get("FIGURE_OUTPUT_DIR", PROJECT_ROOT / "8 Final regression" / "figures")
+
+
+
+
+
+
+
+FIGURE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def _compact_fig_name(filename):
+
+
+
+    stem = Path(filename).stem.lower()
+
+
+
+    stem = re.sub(r"[^a-z0-9]+", "_", stem).strip("_")
+
+
+
+    token_map = {
+
+
+
+        "descriptive": "desc", "polarisation": "pol", "correlation": "corr",
+
+
+
+        "random": "rf", "forest": "rf", "association": "assoc", "strength": "str",
+
+
+
+        "feature": "feat", "importance": "imp", "cluster": "cl", "country": "cty",
+
+
+
+        "topic": "tp", "group": "grp", "party": "pty", "profile": "prof",
+
+
+
+        "interaction": "int", "interactions": "ints", "composition": "comp",
+
+
+
+        "prevalence": "prev", "outcome": "out", "outcomes": "outs",
+
+
+
+        "distribution": "dist", "distributions": "dists", "heatmap": "hm",
+
+
+
+        "scatter": "scat", "ranking": "rank", "silhouette": "sil",
+
+
+
+        "high": "hi", "low": "lo", "absolute": "abs", "professional": "prof",
+
+
+
+        "background": "bg",
+
+
+
+    }
+
+
+
+    parts = [token_map.get(p, p[:4]) for p in stem.split("_") if p]
+
+
+
+    compact = "_".join(parts)
+
+
+
+    compact = (compact[:48].rstrip("_") or "fig")
+
+
+
+    return f"{compact}.png"
+
+
+
+
+
+
+
+def save_figure(filename):
+
+
+
+    plt.savefig(FIGURE_OUTPUT_DIR / _compact_fig_name(filename), dpi=300, bbox_inches="tight")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def first_existing(series_candidates):
+
+
+
+
+
+
+
+    for candidate in series_candidates:
+
+
+
+
+
+
+
+        if candidate in analysis_df.columns:
+
+
+
+
+
+
+
+            return candidate
+
+
+
+
+
+
+
+    return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def numeric_series(column_name):
+
+
+
+
+
+
+
+    return pd.to_numeric(analysis_df[column_name], errors="coerce") if column_name in analysis_df.columns else pd.Series(index=analysis_df.index, dtype=float)
+
+
+
+
+
+
+
+
+
+
+
+def pretty_label(name):
+
+
+
+
+
+
+
+    if name is None:
+
+
+
+
+
+
+
+        return ""
+
+
+
+
+
+
+
+    label = str(name).strip().replace("_", " ")
+
+
+
+
+
+
+
+    label = re.sub(r"\s+", " ", label)
+
+
+
+
+
+
+
+    replacements = {
+
+
+
+
+
+
+
+        "gdp": "GDP",
+
+
+
+
+
+
+
+        "mep": "MEP",
+
+
+
+
+
+
+
+        "eu27": "EU27",
+
+
+
+
+
+
+
+        "55 64": "55-64",
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+    words = []
+
+
+
+
+
+
+
+    for token in label.split(" " ):
+
+
+
+
+
+
+
+        lower = token.lower()
+
+
+
+
+
+
+
+        words.append(replacements.get(lower, token.capitalize()))
+
+
+
+
+
+
+
+    label = " ".join(words)
+
+
+
+
+
+
+
+    label = label.replace("Polarisation Score", "Polarisation score")
+
+
+
+
+
+
+
+    return label
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+outcome_vars = [
+
+
+
+
+
+
+
+    "polarisation_score",
+
+
+
+
+
+
+
+    "us_vs_them",
+
+
+
+
+
+
+
+    "emotional_intensity",
+
+
+
+
+
+
+
+    "moral_absolutism",
+
+
+
+
+
+
+
+    "hostility_to_opponents",
+
+
+
+
+
+
+
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+direct_vars = [
+
+
+
+
+
+
+
+    "age_approx_2020",
+
+
+
+
+
+
+
+    "mep_tenure_approx_2020",
+
+
+
+
+
+
+
+    "median_age",
+
+
+
+
+
+
+
+    "old_age_dependency_ratio",
+
+
+
+
+
+
+
+    "fertility_rate",
+
+
+
+
+
+
+
+    "net_migration",
+
+
+
+
+
+
+
+    "population_change",
+
+
+
+
+
+
+
+    "youth_unemployment",
+
+
+
+
+
+
+
+    "debt_to_gdp",
+
+
+
+
+
+
+
+    "gdp_per_capita_index_eu27_100",
+
+
+
+
+
+
+
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+topic_vars = [
+
+
+
+
+
+
+
+    "Ageing & Pensions",
+
+
+
+
+
+
+
+    "Migration & Population Change",
+
+
+
+
+
+
+
+    "Fertility & Family Formation",
+
+
+
+
+
+
+
+    "Youth & Future Generations",
+
+
+
+
+
+
+
+    "Housing & Living Conditions",
+
+
+
+
+
+
+
+    "Health & Care Services",
+
+
+
+
+
+
+
+    "Regional Depopulation",
+
+
+
+
+
+
+
+    "Labour Force & Workforce",
+
+
+
+
+
+
+
+    "Population Growth & Sustainability",
+
+
+
+
+
+
+
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+topic_vars = [c for c in topic_vars if c in analysis_df.columns]
+
+
+
+topic_vars = list(dict.fromkeys(topic_vars + [
+
+
+
+    c for c in analysis_df.columns
+
+
+
+    if str(c).startswith("Borderline:") or c in ["Fertility, Families & Gender", "Regional Depopulation & Territorial Cohesion"]
+
+
+
+]))
+
+
+
+
+
+
+
+direct_vars = [c for c in direct_vars if c in analysis_df.columns]
+
+
+
+
+
+
+
+outcome_vars = [c for c in outcome_vars if c in analysis_df.columns]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if not outcome_vars:
+
+
+
+
+
+
+
+    raise RuntimeError("No polarisation outcome columns were found in analysis_df.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def prefer_standardized(col):
+
+
+
+    topic_standardized_map = {
+
+
+
+        "Ageing & Pensions": "z_topic_share_ageing_pensions",
+
+
+
+        "Migration & Population Change": "z_topic_share_migration_population",
+
+
+
+        "Fertility, Families & Gender": "z_topic_share_fertility_family",
+
+
+
+        "Youth & Future Generations": "z_topic_share_youth_future",
+
+
+
+        "Borderline: Economic governance and employment": "z_topic_share_fiscal_pensions",
+
+
+
+    }
+
+
+
+    if f"z_{col}" in analysis_df.columns:
+
+
+
+        return f"z_{col}"
+
+
+
+    if col in topic_standardized_map and topic_standardized_map[col] in analysis_df.columns:
+
+
+
+        return topic_standardized_map[col]
+
+
+
+    return col
+
+
+
+
+
+profile_vars = list(dict.fromkeys(outcome_vars + [prefer_standardized(c) for c in direct_vars + topic_vars]))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1) High vs low polarisation profile plot
+
+
+
+
+
+
+
+if "polarisation_score" not in analysis_df.columns:
+
+
+
+
+
+
+
+    raise RuntimeError("polarisation_score is required for the high/low profile plot.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+profile_df = analysis_df.copy()
+
+
+
+
+
+
+
+score_rank = pd.to_numeric(profile_df["polarisation_score"], errors="coerce").rank(pct=True)
+
+
+
+
+
+
+
+bottom_mask = score_rank <= 0.25
+
+
+
+
+
+
+
+top_mask = score_rank >= 0.75
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+selected_group_means = []
+
+
+
+
+
+
+
+for group_name, group_mask in {"Bottom 25%": bottom_mask, "Top 25%": top_mask}.items():
+
+
+
+
+
+
+
+    group = profile_df.loc[group_mask, profile_vars].apply(pd.to_numeric, errors="coerce")
+
+
+
+
+
+
+
+    means = group.mean(numeric_only=True)
+
+
+
+
+
+
+
+    selected_group_means.append(means.rename(group_name))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+high_low_profile = pd.concat(selected_group_means, axis=1).reindex(profile_vars)
+
+
+
+
+
+
+
+high_low_profile = high_low_profile.dropna(how="all")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if not high_low_profile.empty:
+
+
+
+
+
+
+
+    ax = high_low_profile.plot(kind="barh", figsize=(12, max(6, 0.35 * len(high_low_profile))), width=0.82, color=["#7f8c8d", "#c0392b"])
+
+
+
+
+
+
+
+    ax.set_title("High vs Low Polarisation Profile (Top and Bottom Quartiles of Polarisation Score)")
+
+
+
+
+
+
+
+    ax.set_xlabel("Mean value")
+
+
+
+
+
+
+
+    ax.set_ylabel("Variable")
+
+
+
+
+
+
+
+    ax.legend(title="Group", loc="lower right")
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_high_vs_low_polarisation_profile.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 2) Topic composition by polarisation cluster
+
+
+
+
+
+
+
+cluster_col = first_existing(["topic_polarisation_cluster", "polarisation_cluster", "cluster"])
+
+
+
+
+
+
+
+if cluster_col is not None and topic_vars:
+
+
+
+
+
+
+
+    cluster_topic_means = analysis_df.groupby(cluster_col)[topic_vars].mean(numeric_only=True)
+
+
+
+
+
+
+
+    cluster_topic_norm = cluster_topic_means.div(cluster_topic_means.sum(axis=1).replace(0, np.nan), axis=0)
+
+
+
+
+
+
+
+    cluster_topic_norm = cluster_topic_norm.fillna(0.0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    plt.figure(figsize=(12, max(4, 0.45 * len(cluster_topic_norm))))
+
+
+
+
+
+
+
+    sns.heatmap(cluster_topic_norm, cmap="YlGnBu", linewidths=0.3, cbar_kws={"label": "Within-cluster topic share"})
+
+
+
+
+
+
+
+    plt.title("Topic Composition by Polarisation Cluster")
+
+
+
+
+
+
+
+    plt.xlabel("Topic")
+
+
+
+
+
+
+
+    plt.ylabel("Cluster")
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_topic_composition_by_cluster.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 3) EP group polarisation ranking, minimum 3 observations
+
+
+
+
+
+
+
+ep_group_column = first_existing(["ep_group_clean", "ep_group_extracted"])
+
+
+
+
+
+
+
+if ep_group_column is not None and "polarisation_score" in analysis_df.columns:
+
+
+
+
+
+
+
+    ep_group_summary = (
+
+
+
+
+
+
+
+        analysis_df.assign(polarisation_score=pd.to_numeric(analysis_df["polarisation_score"], errors="coerce"))
+
+
+
+
+
+
+
+        .groupby(ep_group_column)
+
+
+
+
+
+
+
+        .agg(mean_polarisation_score=("polarisation_score", "mean"), n_obs=("polarisation_score", "size"))
+
+
+
+
+
+
+
+        .reset_index()
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    ep_group_summary = ep_group_summary[ep_group_summary["n_obs"] >= 3].sort_values("mean_polarisation_score", ascending=False)
+
+
+
+
+
+
+
+    display(ep_group_summary)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if not ep_group_summary.empty:
+
+
+
+
+
+
+
+        plt.figure(figsize=(11, max(5, 0.35 * len(ep_group_summary))))
+
+
+
+
+
+
+
+        sns.barplot(data=ep_group_summary, y=ep_group_column, x="mean_polarisation_score", color="#2c7fb8")
+
+
+
+
+
+
+
+        plt.title("EP Group Polarisation Ranking (n >= 3)")
+
+
+
+
+
+
+
+        plt.xlabel("Mean polarisation score")
+
+
+
+
+
+
+
+        plt.ylabel("EP group")
+
+
+
+
+
+
+
+        plt.tight_layout()
+
+
+
+
+
+
+
+        save_figure("descriptive_ep_group_polarisation_ranking.png")
+
+
+
+
+
+
+
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 4) Topic prevalence by EP group heatmap
+
+
+
+
+
+
+
+if ep_group_column is not None and topic_vars:
+
+
+
+
+
+
+
+    ep_topic_means = analysis_df.groupby(ep_group_column)[topic_vars].mean(numeric_only=True)
+
+
+
+
+
+
+
+    plt.figure(figsize=(12, max(5, 0.4 * len(ep_topic_means))))
+
+
+
+
+
+
+
+    sns.heatmap(ep_topic_means, cmap="YlGnBu", linewidths=0.25, cbar_kws={"label": "Mean topic share"})
+
+
+
+
+
+
+
+    plt.title("Topic Prevalence by EP Group")
+
+
+
+
+
+
+
+    plt.xlabel("Topic")
+
+
+
+
+
+
+
+    plt.ylabel("EP group")
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_topic_prevalence_by_ep_group.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 5) Outcome profile by EP group, using z-scored group means
+
+
+
+
+
+
+
+if ep_group_column is not None:
+
+
+
+
+
+
+
+    outcome_means = (
+
+
+
+
+
+
+
+        analysis_df.assign(**{c: pd.to_numeric(analysis_df[c], errors="coerce") for c in outcome_vars if c in analysis_df.columns})
+
+
+
+
+
+
+
+        .groupby(ep_group_column)[outcome_vars]
+
+
+
+
+
+
+
+        .mean(numeric_only=True)
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    outcome_z = (outcome_means - outcome_means.mean(axis=0)) / outcome_means.std(axis=0).replace(0, np.nan)
+
+
+
+
+
+
+
+    outcome_z = outcome_z.fillna(0.0)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    plt.figure(figsize=(10, max(5, 0.35 * len(outcome_z))))
+
+
+
+
+
+
+
+    sns.heatmap(outcome_z, cmap="RdBu_r", center=0, linewidths=0.25, cbar_kws={"label": "z-scored group mean"})
+
+
+
+
+
+
+
+    plt.title("Outcome Profile by EP Group (Z-scored Means)")
+
+
+
+
+
+
+
+    plt.xlabel("Outcome")
+
+
+
+
+
+
+
+    plt.ylabel("EP group")
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_outcome_profile_by_ep_group.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 6) Bubble plots showing interaction logic
+
+
+
+
+
+
+
+bubble_specs = [
+
+
+
+
+
+
+
+    ("net_migration", "Migration & Population Change", "Migration Context vs Migration Topic"),
+
+
+
+
+
+
+
+    ("old_age_dependency_ratio", "Ageing & Pensions", "Ageing Context vs Ageing Topic"),
+
+
+
+
+
+
+
+    ("fertility_rate", "Fertility, Families & Gender", "Fertility Context vs Fertility Topic"),
+
+
+
+
+
+
+
+    ("population_change", "Regional Depopulation & Territorial Cohesion", "Population Change vs Regional Cohesion Topic"),
+
+
+
+
+
+
+
+    ("debt_to_gdp", "Borderline: Economic governance and employment", "Debt Burden vs Economic Governance Topic"),
+
+
+
+
+
+
+
+    ("youth_unemployment", "Borderline: Labour market and social policy", "Youth Unemployment vs Labour Policy Topic"),
+
+
+
+
+
+
+
+    ("population_change", "Borderline: Regional development policy", "Population Change vs Regional Development Topic"),
+
+
+
+
+
+
+
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bubble_cols = []
+
+
+
+
+
+
+
+for x_col, y_col, title in bubble_specs:
+
+
+
+    x_plot_col = prefer_standardized(x_col)
+
+
+
+    y_plot_col = prefer_standardized(y_col)
+
+
+
+    if x_plot_col in analysis_df.columns and y_plot_col in analysis_df.columns and "polarisation_score" in analysis_df.columns:
+
+
+
+        bubble_cols.append((x_plot_col, y_plot_col, title))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if bubble_cols:
+
+
+
+
+
+
+
+    fig, axes = plt.subplots(1, len(bubble_cols), figsize=(7 * len(bubble_cols), 5), squeeze=False)
+
+
+
+
+
+
+
+    axes_flat = axes.flatten()
+
+
+
+
+
+
+
+    bubble_size = pd.to_numeric(analysis_df["polarisation_score"], errors="coerce")
+
+
+
+
+
+
+
+    valid_bubble_size = bubble_size.dropna()
+
+
+
+
+
+
+
+    if valid_bubble_size.empty:
+
+
+
+
+
+
+
+        bubble_scaled = pd.Series(100.0, index=analysis_df.index)
+
+
+
+
+
+
+
+    else:
+
+
+
+
+
+
+
+        size_min = float(valid_bubble_size.min())
+
+
+
+
+
+
+
+        size_span = float(valid_bubble_size.max() - size_min)
+
+
+
+
+
+
+
+        bubble_scaled = 50 + 450 * ((bubble_size - size_min) / (size_span if size_span else 1.0))
+
+
+
+
+
+
+
+        bubble_scaled = bubble_scaled.clip(lower=50, upper=500)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    for idx, (x_col, y_col, title) in enumerate(bubble_cols):
+
+
+
+
+
+
+
+        plot_df = analysis_df[[x_col, y_col, "polarisation_score"]].copy()
+
+
+
+
+
+
+
+        plot_df[x_col] = pd.to_numeric(plot_df[x_col], errors="coerce")
+
+
+
+
+
+
+
+        plot_df[y_col] = pd.to_numeric(plot_df[y_col], errors="coerce")
+
+
+
+
+
+
+
+        plot_df["bubble_size"] = bubble_scaled
+
+
+
+
+
+
+
+        plot_df = plot_df.dropna(subset=[x_col, y_col, "polarisation_score"])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        ax = axes_flat[idx]
+
+
+
+
+
+
+
+        sns.scatterplot(
+
+
+
+
+
+
+
+            data=plot_df,
+
+
+
+
+
+
+
+            x=x_col,
+
+
+
+
+
+
+
+            y=y_col,
+
+
+
+
+
+
+
+            size="bubble_size",
+
+
+
+
+
+
+
+            sizes=(50, 500),
+
+
+
+
+
+
+
+            hue="polarisation_score",
+
+
+
+
+
+
+
+            palette="viridis",
+
+
+
+
+
+
+
+            alpha=0.75,
+
+
+
+
+
+
+
+            ax=ax,
+
+
+
+
+
+
+
+            legend=False,
+
+
+
+
+
+
+
+        )
+
+
+
+
+
+
+
+        ax.set_title(title)
+
+
+
+
+
+
+
+        ax.set_xlabel(pretty_label(x_col))
+
+
+
+
+
+
+
+        ax.set_ylabel(pretty_label(y_col))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_bubble_interaction_plots.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 7) Distribution plots for all five polarisation outcomes
+
+
+
+
+
+
+
+available_outcomes = [c for c in outcome_vars if c in analysis_df.columns]
+
+
+
+
+
+
+
+if available_outcomes:
+
+
+
+
+
+
+
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8), squeeze=False)
+
+
+
+
+
+
+
+    axes_flat = axes.flatten()
+
+
+
+
+
+
+
+    for idx, outcome in enumerate(available_outcomes):
+
+
+
+
+
+
+
+        values = pd.to_numeric(analysis_df[outcome], errors="coerce").dropna()
+
+
+
+
+
+
+
+        sns.histplot(values, kde=True, ax=axes_flat[idx], color="#4c78a8", bins=20)
+
+
+
+
+
+
+
+        axes_flat[idx].set_title(pretty_label(outcome))
+
+
+
+
+
+
+
+        axes_flat[idx].set_xlabel(pretty_label(outcome))
+
+
+
+
+
+
+
+        axes_flat[idx].set_ylabel("Count")
+
+
+
+
+
+
+
+    for idx in range(len(available_outcomes), len(axes_flat)):
+
+
+
+
+
+
+
+        axes_flat[idx].axis("off")
+
+
+
+
+
+
+
+    plt.tight_layout()
+
+
+
+
+
+
+
+    save_figure("descriptive_polarisation_outcome_distributions.png")
+
+
+
+
+
+
+
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 8) Table of the top 10 most polarised cases
+
+
+
+
+
+
+
+case_df = analysis_df.copy()
+
+
+
+
+
+
+
+case_df["polarisation_score"] = pd.to_numeric(case_df["polarisation_score"], errors="coerce")
+
+
+
+
+
+
+
+case_df = case_df.sort_values("polarisation_score", ascending=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mep_name_col = first_existing(["mep_name_clean", "name", "MEP", "full_name_extracted"])
+
+
+
+
+
+
+
+country_col = first_existing(["country_clean", "Country", "country", "country_of_origin_extracted"])
+
+
+
+
+
+
+
+ep_group_col = first_existing(["ep_group_clean", "ep_group_extracted", "ep_group"])
+
+
+
+
+
+
+
+main_topic_col = None
+
+
+
+
+
+
+
+if topic_vars:
+
+
+
+
+
+
+
+    topic_subset = [c for c in topic_vars if c in case_df.columns]
+
+
+
+
+
+
+
+    if topic_subset:
+
+
+
+
+
+
+
+        case_df["main_topic"] = case_df[topic_subset].apply(pd.to_numeric, errors="coerce").idxmax(axis=1)
+
+
+
+
+
+
+
+        main_topic_col = "main_topic"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+columns_to_show = [c for c in [mep_name_col, country_col, ep_group_col, main_topic_col, "polarisation_score"] if c is not None and c in case_df.columns]
+
+
+
+
+
+
+
+most_polarised_cases = case_df[columns_to_show].head(10).reset_index(drop=True)
+
+
+
+
+
+
+
+display(most_polarised_cases)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Optional compact summary tables for thesis drafting
+
+
+
+
+
+
+
+ep_group_polarisation_table = None
+
+
+
+
+
+
+
+if ep_group_column is not None and "polarisation_score" in analysis_df.columns:
+
+
+
+
+
+
+
+    ep_group_polarisation_table = (
+
+
+
+
+
+
+
+        analysis_df.assign(polarisation_score=pd.to_numeric(analysis_df["polarisation_score"], errors="coerce"))
+
+
+
+
+
+
+
+        .groupby(ep_group_column)
+
+
+
+
+
+
+
+        .agg(mean_polarisation_score=("polarisation_score", "mean"), median_polarisation_score=("polarisation_score", "median"), n_obs=("polarisation_score", "size"))
+
+
+
+
+
+
+
+        .query("n_obs >= 3")
+
+
+
+
+
+
+
+        .sort_values("mean_polarisation_score", ascending=False)
+
+
+
+
+
+
+
+        .reset_index()
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    display(ep_group_polarisation_table)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 9) Party group x dominant topic count heatmap
+
+
+
+
+
+
+
+# and 10) Party group x dominant topic mean polarisation heatmap
+
+
+
+
+
+
+
+_ep_col = "ep_group_clean" if "ep_group_clean" in analysis_df.columns else None
+
+
+
+
+
+
+
+_topic_col = "dominant_topic" if "dominant_topic" in analysis_df.columns else ("dominant_cluster" if "dominant_cluster" in analysis_df.columns else None)
+
+
+
+
+
+
+
+_score_col = "polarisation_score" if "polarisation_score" in analysis_df.columns else None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if _ep_col is None:
+
+
+
+
+
+
+
+    print("Skipping party x topic heatmaps: ep_group_clean not found.")
+
+
+
+
+
+
+
+elif _topic_col is None:
+
+
+
+
+
+
+
+    print("Skipping party x topic heatmaps: neither dominant_topic nor dominant_cluster found.")
+
+
+
+
+
+
+
+elif _score_col is None:
+
+
+
+
+
+
+
+    print("Skipping party x topic heatmaps: polarisation_score not found.")
+
+
+
+
+
+
+
+else:
+
+
+
+
+
+
+
+    _pt_df = analysis_df[[_ep_col, _topic_col, _score_col]].copy()
+
+
+
+
+
+
+
+    _pt_df[_score_col] = pd.to_numeric(_pt_df[_score_col], errors="coerce")
+
+
+
+
+
+
+
+    _pt_df = _pt_df.dropna(subset=[_ep_col, _topic_col])
+
+
+
+
+
+
+
+    _pt_df[_ep_col] = _pt_df[_ep_col].astype(str).str.strip()
+
+
+
+
+
+
+
+    _pt_df[_topic_col] = _pt_df[_topic_col].astype(str).str.strip()
+
+
+
+
+
+
+
+    _pt_df = _pt_df[_pt_df[_topic_col] != "Other"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Filter EP groups to those with at least 3 total observations
+
+
+
+
+
+
+
+    _ep_counts = _pt_df[_ep_col].value_counts()
+
+
+
+
+
+
+
+    _valid_ep_groups = _ep_counts[_ep_counts >= 3].index.tolist()
+
+
+
+
+
+
+
+    _pt_df = _pt_df[_pt_df[_ep_col].isin(_valid_ep_groups)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Count table
+
+
+
+
+
+
+
+    _count_pivot = (
+
+
+
+
+
+
+
+        _pt_df.groupby([_ep_col, _topic_col])
+
+
+
+
+
+
+
+        .size()
+
+
+
+
+
+
+
+        .unstack(fill_value=0)
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    print(f"\nParty x Topic count table (ep_group_clean x {_topic_col}):")
+
+
+
+
+
+
+
+    display(_count_pivot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if not _count_pivot.empty:
+
+
+
+
+
+
+
+        _fig_h = max(5, 0.45 * len(_count_pivot))
+
+
+
+
+
+
+
+        _fig_w = max(8, 0.7 * len(_count_pivot.columns))
+
+
+
+
+
+
+
+        plt.figure(figsize=(_fig_w, _fig_h))
+
+
+
+
+
+
+
+        sns.heatmap(
+
+
+
+
+
+
+
+            _count_pivot,
+
+
+
+
+
+
+
+            cmap="YlGnBu",
+
+
+
+
+
+
+
+            linewidths=0.25,
+
+
+
+
+
+
+
+            annot=True,
+
+
+
+
+
+
+
+            fmt="d",
+
+
+
+
+
+
+
+            cbar_kws={"label": "Number of observations"},
+
+
+
+
+
+
+
+        )
+
+
+
+
+
+
+
+        plt.title(f"Party Group x Dominant Topic Count of MEPs")
+
+
+
+
+
+
+
+        plt.xlabel("Dominant Topic")
+
+
+
+
+
+
+
+        plt.ylabel("EP Group")
+
+
+
+
+
+
+
+        plt.xticks(rotation=35, ha="right")
+
+
+
+
+
+
+
+        plt.tight_layout()
+
+
+
+
+
+
+
+        save_figure("party_topic_count_heatmap.png")
+
+
+
+
+
+
+
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # Mean polarisation table (blank cells where n < 2)
+
+
+
+
+
+
+
+    _mean_pivot = (
+
+
+
+
+
+
+
+        _pt_df.groupby([_ep_col, _topic_col])[_score_col]
+
+
+
+
+
+
+
+        .mean()
+
+
+
+
+
+
+
+        .unstack()
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    _n_pivot = (
+
+
+
+
+
+
+
+        _pt_df.groupby([_ep_col, _topic_col])
+
+
+
+
+
+
+
+        .size()
+
+
+
+
+
+
+
+        .unstack(fill_value=0)
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+
+
+    # Mask cells with fewer than 2 observations
+
+
+
+
+
+
+
+    _mean_pivot_masked = _mean_pivot.where(_n_pivot >= 2)
+
+
+
+
+
+
+
+    print(f"\nParty x Topic mean polarisation_score (blank = fewer than 2 obs):")
+
+
+
+
+
+
+
+    display(_mean_pivot_masked.round(2))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if not _mean_pivot_masked.empty:
+
+
+
+
+
+
+
+        _fig_h2 = max(5, 0.45 * len(_mean_pivot_masked))
+
+
+
+
+
+
+
+        _fig_w2 = max(8, 0.7 * len(_mean_pivot_masked.columns))
+
+
+
+
+
+
+
+        plt.figure(figsize=(_fig_w2, _fig_h2))
+
+
+
+
+
+
+
+        sns.heatmap(
+
+
+
+
+
+
+
+            _mean_pivot_masked,
+
+
+
+
+
+
+
+            cmap="RdYlGn_r",
+
+
+
+
+
+
+
+            linewidths=0.25,
+
+
+
+
+
+
+
+            annot=True,
+
+
+
+
+
+
+
+            fmt=".1f",
+
+
+
+
+
+
+
+            cbar_kws={"label": "Mean polarisation score"},
+
+
+
+
+
+
+
+        )
+
+
+
+
+
+
+
+        plt.title("Party Group x Dominant Topic Mean Polarisation Score")
+
+
+
+
+
+
+
+        plt.xlabel("Dominant Topic")
+
+
+
+
+
+
+
+        plt.ylabel("EP Group")
+
+
+
+
+
+
+
+        plt.xticks(rotation=35, ha="right")
+
+
+
+
+
+
+
+        plt.tight_layout()
+
+
+
+
+
+
+
+        save_figure("party_topic_polarisation_heatmap.png")
+
+
+
+
+
+
+
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+print("Descriptive section complete.")
