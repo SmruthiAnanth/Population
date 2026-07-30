@@ -1,0 +1,57 @@
+variable,role,dtype,non_missing,missing,missing_share,unique_values
+mep_name_clean,identifier,object,227,0,0.0,227
+country_clean,identifier,object,227,0,0.0,28
+Country,identifier,object,227,0,0.0,30
+n_documents,speech count / topic intensity,int64,227,0,0.0,5
+n_relevant_speeches,speech count / topic intensity,int64,227,0,0.0,4
+dominant_cluster_score,speech count / topic intensity,float64,0,227,1.0,0
+polarisation_score,polarisation outcome,float64,227,0,0.0,28
+confidence,polarisation outcome,float64,227,0,0.0,9
+us_vs_them,polarisation outcome,float64,227,0,0.0,24
+emotional_intensity,polarisation outcome,float64,227,0,0.0,28
+moral_absolutism,polarisation outcome,float64,227,0,0.0,29
+hostility_to_opponents,polarisation outcome,float64,227,0,0.0,27
+Ageing & Pensions,LDA topic share,float64,227,0,0.0,225
+Borderline: Economic governance and employment,LDA topic share,float64,227,0,0.0,208
+Borderline: Island regions and cohesion,LDA topic share,float64,227,0,0.0,211
+Borderline: Labour market and social policy,LDA topic share,float64,227,0,0.0,207
+Borderline: Regional development policy,LDA topic share,float64,227,0,0.0,217
+Borderline: Youth / demographic future (weak signal),LDA topic share,float64,227,0,0.0,206
+"Fertility, Families & Gender",LDA topic share,float64,227,0,0.0,221
+Health & Care Services,LDA topic share,float64,227,0,0.0,216
+Housing & Living Conditions,LDA topic share,float64,227,0,0.0,207
+Migration & Population Change,LDA topic share,float64,227,0,0.0,218
+Population Growth & Sustainability,LDA topic share,float64,227,0,0.0,206
+Regional Depopulation & Territorial Cohesion,LDA topic share,float64,227,0,0.0,221
+Youth & Future Generations,LDA topic share,float64,227,0,0.0,209
+Other,LDA topic share,float64,227,0,0.0,226
+fertility_rate,country-level context,float64,227,0,0.0,27
+old_age_dependency_ratio,country-level context,float64,227,0,0.0,28
+median_age,country-level context,float64,227,0,0.0,28
+life_expectancy,country-level context,float64,227,0,0.0,28
+net_migration,country-level context,float64,227,0,0.0,28
+population_change,country-level context,float64,227,0,0.0,28
+gdp_per_capita_index_eu27_100,country-level context,float64,220,7,0.031,27
+employment_rate_55_64,country-level context,float64,220,7,0.031,27
+youth_unemployment,country-level context,float64,220,7,0.031,27
+debt_to_gdp,country-level context,float64,220,7,0.031,27
+age_started_receiving_old_age_pension,country-level context,float64,220,7,0.031,27
+continued_or_stopped_working_at_pension_start,country-level context,float64,220,7,0.031,5
+labour_force_participation_55_64,country-level context,float64,227,0,0.0,28
+old_age_poverty_rate,country-level context,float64,227,0,0.0,28
+projected_old_age_dependency_ratio_2050,country-level context,float64,220,7,0.031,27
+foreign_born_population_share,country-level context,float64,227,0,0.0,28
+dominant_cluster,categorical biography/topic,object,227,0,0.0,14
+gender_bucket,categorical biography/topic,object,214,13,0.057,2
+region_bucket,categorical biography/topic,object,214,13,0.057,6
+education_level_bucket,categorical biography/topic,object,209,18,0.079,4
+education_field_bucket,categorical biography/topic,object,209,18,0.079,11
+professional_background_bucket,categorical biography/topic,object,214,13,0.057,10
+religion_bucket,categorical biography/topic,object,214,13,0.057,3
+parental_status_bucket,categorical biography/topic,object,214,13,0.057,3
+migration_background_bucket,categorical biography/topic,object,214,13,0.057,3
+international_experience_bucket,categorical biography/topic,object,214,13,0.057,4
+military_background_bucket,categorical biography/topic,object,214,13,0.057,3
+prior_political_level_bucket,categorical biography/topic,object,214,13,0.057,5
+demography_expertise_bucket,categorical biography/topic,object,6,221,0.974,2
+MEP,categorical biography/topic,float64,225,2,0.009,2

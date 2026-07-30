@@ -1,0 +1,13 @@
+model,interaction,term,coef,ci_low,ci_high,p_value,significant_10pct,significant_5pct
+full_model,Ageing topic x old-age dependency,topic_ageing_pensions:old_age_dependency_ratio_z,-0.8438896239960371,-2.5378257752824793,0.8500465272904053,0.3288563354688051,False,False
+full_model,Ageing topic x old-age poverty,topic_ageing_pensions:old_age_poverty_rate_z,0.8758340989892341,-1.1900070170109742,2.9416752149894423,0.406003895464483,False,False
+full_model,Migration topic x net migration,topic_migration:net_migration_z,-0.27649982837191855,-9.408003578043322,8.855003921299486,0.9526755212952568,False,False
+full_model,Fertility/family topic x fertility rate,topic_fertility_family_gender:fertility_rate_z,-2.2559131752592285,-4.899401387993278,0.387575037474821,0.0944053074681069,True,False
+full_model,Regional depopulation topic x population change,topic_regional_depopulation:population_change_z,-1.7553089571191327,-6.008428522435742,2.4978106081974767,0.41857349108823527,False,False
+full_model,Youth topic x youth unemployment,topic_youth_future:youth_unemployment_z,0.233007169801156,-6.389282652205817,6.855296991808129,0.9450199499714392,False,False
+single_model,Ageing topic x old-age dependency,topic_ageing_pensions:old_age_dependency_ratio_z,-0.7142777780667684,-2.0842613389182367,0.6557057827846999,0.3068377275199943,False,False
+single_model,Ageing topic x old-age poverty,topic_ageing_pensions:old_age_poverty_rate_z,0.328614337797162,-1.5099198368070574,2.1671485124013814,0.7260997919971021,False,False
+single_model,Migration topic x net migration,topic_migration:net_migration_z,-0.7110334516694743,-9.839076827465187,8.417009924126239,0.8786566558928225,False,False
+single_model,Fertility/family topic x fertility rate,topic_fertility_family_gender:fertility_rate_z,-2.0234072449366227,-4.269156150914548,0.2223416610413027,0.0774098377957856,True,False
+single_model,Regional depopulation topic x population change,topic_regional_depopulation:population_change_z,-0.8086081332654735,-4.419720609589402,2.8025043430584553,0.6607489356378181,False,False
+single_model,Youth topic x youth unemployment,topic_youth_future:youth_unemployment_z,0.6728938106609821,-4.714185460437409,6.059973081759373,0.8065982670862414,False,False

@@ -1,0 +1,44 @@
+variable,role,dtype,non_missing,missing,missing_share,unique_values
+mep_name_clean,identifier,object,193,0,0.0,193
+Country,identifier,object,193,0,0.0,30
+country_clean_final,identifier,object,193,0,0.0,28
+polarisation_score,polarisation outcome,float64,193,0,0.0,26
+confidence,polarisation outcome,float64,193,0,0.0,9
+us_vs_them,polarisation outcome,float64,193,0,0.0,24
+emotional_intensity,polarisation outcome,float64,193,0,0.0,26
+moral_absolutism,polarisation outcome,float64,193,0,0.0,29
+hostility_to_opponents,polarisation outcome,float64,193,0,0.0,25
+n_relevant_speeches,speech / topic intensity,int64,193,0,0.0,4
+dominant_cluster_score,speech / topic intensity,float64,0,193,1.0,0
+Ageing & Pensions,LDA topic share,float64,193,0,0.0,192
+Borderline: Economic governance and employment,LDA topic share,float64,193,0,0.0,180
+Borderline: Island regions and cohesion,LDA topic share,float64,193,0,0.0,182
+Borderline: Labour market and social policy,LDA topic share,float64,193,0,0.0,179
+Borderline: Regional development policy,LDA topic share,float64,193,0,0.0,185
+Borderline: Youth / demographic future (weak signal),LDA topic share,float64,193,0,0.0,177
+"Fertility, Families & Gender",LDA topic share,float64,193,0,0.0,188
+Health & Care Services,LDA topic share,float64,193,0,0.0,185
+Housing & Living Conditions,LDA topic share,float64,193,0,0.0,178
+Migration & Population Change,LDA topic share,float64,193,0,0.0,186
+Population Growth & Sustainability,LDA topic share,float64,193,0,0.0,178
+Regional Depopulation & Territorial Cohesion,LDA topic share,float64,193,0,0.0,189
+Youth & Future Generations,LDA topic share,float64,193,0,0.0,181
+Other,LDA topic share,float64,193,0,0.0,192
+age_2020,biographical continuous,float64,181,12,0.062,48
+mep_tenure_2020,biographical continuous,float64,19,174,0.902,8
+dominant_topic,categorical,object,193,0,0.0,14
+gender_clean,categorical,object,192,1,0.005,2
+region_clean,categorical,object,192,1,0.005,5
+education_level_clean,categorical,object,189,4,0.021,4
+education_field_clean,categorical,object,189,4,0.021,9
+professional_background_clean,categorical,object,192,1,0.005,8
+religion_mentioned_flag,categorical,object,193,0,0.0,3
+parental_status_known,categorical,object,193,0,0.0,3
+has_children_if_known,categorical,object,193,0,0.0,3
+migration_background_flag,categorical,object,193,0,0.0,3
+international_experience_flag,categorical,object,193,0,0.0,3
+military_background_flag,categorical,object,193,0,0.0,3
+prior_political_level_clean,categorical,object,192,1,0.005,5
+demography_expertise_flag,categorical,object,193,0,0.0,1
+age_group,categorical,object,193,0,0.0,5
+tenure_group,categorical,object,193,0,0.0,4
